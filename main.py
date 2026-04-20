@@ -1,5 +1,6 @@
 import requests
 import json
+import csv
 from config import Config
 
 class OpenRouterDemo:
@@ -17,6 +18,28 @@ class OpenRouterDemo:
             print(f"Configuration error: {e}")
             print("Please make sure you have a valid .env file with OPENROUTER_API_KEY")
             raise
+    
+    def load_questions_from_csv(self, csv_file='questions.csv'):
+        """Load questions from CSV file"""
+        questions = []
+        try:
+            with open(csv_file, 'r', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if row and row[0].strip():
+                        questions.append(row[0].strip())
+            print(f"Loaded {len(questions)} questions from {csv_file}")
+            return questions
+        except FileNotFoundError:
+            print(f"❌ CSV file '{csv_file}' not found. Using default questions.")
+            return [
+                "What is the meaning of life?",
+                "What is 42 in programming culture?",
+                "Explain Git in one sentence"
+            ]
+        except Exception as e:
+            print(f"❌ Error reading CSV: {e}")
+            return []
     
     def ask_question(self, question):
         """Send a question to OpenRouter API and get response"""
@@ -61,8 +84,8 @@ class OpenRouterDemo:
             print(f"❌ Network error: {e}")
             return None
     
-    def demo_conversation(self):
-        """Run a demo conversation"""
+    def demo_conversation(self, csv_file='questions.csv'):
+        """Run a demo conversation with questions from CSV"""
         print("\n" + "="*50)
         print("🚀 OpenRouter API Demo with Git and .env")
         print("="*50)
@@ -70,12 +93,12 @@ class OpenRouterDemo:
         print(f"Site: {self.site_name} ({self.site_url})")
         print("="*50 + "\n")
         
-        # Demo questions
-        questions = [
-            "What is the meaning of life?",
-            "What is 42 in programming culture?",
-            "Explain Git in one sentence"
-        ]
+        # Load questions from CSV
+        questions = self.load_questions_from_csv(csv_file)
+        
+        if not questions:
+            print("No questions to ask. Please check your CSV file.")
+            return
         
         for i, question in enumerate(questions, 1):
             print(f"\nQuestion {i}/{len(questions)}:")
@@ -85,11 +108,9 @@ class OpenRouterDemo:
 def main():
     """Main function to run the demo"""
     try:
-        # Create demo instance
         demo = OpenRouterDemo()
         
-        # Run demonstration
-        demo.demo_conversation()
+        demo.demo_conversation('questions.csv')
         
         print("\n✨ Demo completed successfully!")
         
